@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 
 # ----------------- FUNZIONE HTML -----------------
 def generate_html(descrizione, immagine):
@@ -103,11 +104,15 @@ if uploaded_file:
     st.write("Anteprima dati WooCommerce:")
     st.dataframe(wc_df.head())
 
-    # Bottone download CSV
-    csv = wc_df.to_csv(index=False)
+    # ----------------- DOWNLOAD EXCEL -----------------
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        wc_df.to_excel(writer, index=False, sheet_name='Listino')
+    output.seek(0)
+
     st.download_button(
-        label="Scarica CSV WooCommerce",
-        data=csv,
-        file_name='listino_woocommerce.csv',
-        mime='text/csv'
+        label="Scarica Excel WooCommerce",
+        data=output,
+        file_name="listino_woocommerce.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
